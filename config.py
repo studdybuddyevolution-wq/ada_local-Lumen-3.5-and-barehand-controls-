@@ -3,7 +3,7 @@ Centralized configuration for Pocket AI.
 """
 
 # --- Model Configuration ---
-RESPONDER_MODEL = "qwen3:1.7b"
+RESPONDER_MODEL = "qwen3.5:4b"
 OLLAMA_URL = "http://localhost:11434/api"
 LOCAL_ROUTER_PATH = "./merged_model"
 HF_ROUTER_REPO = "nlouis/pocket-ai-router"  # Hugging Face repo for auto-download
@@ -15,20 +15,11 @@ TTS_MODEL_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_
 TTS_CONFIG_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_GB/northern_english_male/medium/en_GB-northern_english_male-medium.onnx.json"
 
 # --- STT Configuration ---
-# Using RealTimeSTT for real-time speech-to-text
-STT_MODEL_PATH = None  # Not used with RealTimeSTT (kept for compatibility)
-STT_USE_WHISPER = False  # Not used with RealTimeSTT (kept for compatibility)
-WHISPER_MODEL_SIZE = "base"  # Not used with RealTimeSTT (kept for compatibility)
-WAKE_WORD_DETECTION_METHOD = "transcription"  # RealTimeSTT uses transcription-based detection
-REALTIMESTT_MODEL = "base"  # RealTimeSTT model: "tiny", "base", "small", "medium", "large"
-USE_PORCUPINE_WAKE_WORD = False  # Use Porcupine for wake word detection (more accurate, requires API key)
-PORCUPINE_ACCESS_KEY = None  # Get from https://console.picovoice.ai/ (optional, for better wake word detection)
-WAKE_WORD = "jarvis"
-WAKE_WORD_SENSITIVITY = 0.4  # For audio pattern matching (0.0-1.0, higher = more sensitive) - Lowered to reduce false positives
-WAKE_WORD_CONFIRMATION_COUNT = 1  # Require multiple detections before triggering (reduces false positives)
+# RealTimeSTT capture is activated only by the user's manual Wake control.
+# The production Lumen listener does not use wake-word detection.
+REALTIMESTT_MODEL = "base"
 STT_SAMPLE_RATE = 16000
 STT_CHUNK_SIZE = 4096
-STT_RECORD_TIMEOUT = 5.0  # Maximum seconds to record after wake word
 
 # --- Voice Assistant Configuration ---
 VOICE_ASSISTANT_ENABLED = True

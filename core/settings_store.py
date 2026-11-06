@@ -14,9 +14,10 @@ from PySide6.QtCore import QObject, Signal
 # Default settings - used when no settings file exists
 DEFAULT_SETTINGS = {
     "theme": "Dark",
+    "engine": {"mode": "local"},
     "ollama_url": "http://localhost:11434",
     "models": {
-        "chat": "qwen3:1.7b",
+        "chat": "qwen3.5:4b",
         "web_agent": "qwen3-vl:4b",
     },
     "web_agent_params": {
@@ -65,6 +66,10 @@ class SettingsStore(QObject):
                         loaded = json.load(f)
                     # Merge with defaults to handle new settings in updates
                     self._settings = self._deep_merge(DEFAULT_SETTINGS.copy(), loaded)
+                    # Migrate only the original bundled default; keep custom model choices.
+                    saved_models = loaded.get("models", {})
+                    if isinstance(saved_models, dict) and saved_models.get("chat") == "qwen3:1.7b":
+                        self._settings.setdefault("models", {})["chat"] = "qwen3.5:4b"
                 except (json.JSONDecodeError, IOError) as e:
                     print(f"[Settings] Error loading settings: {e}. Using defaults.")
                     self._settings = DEFAULT_SETTINGS.copy()
