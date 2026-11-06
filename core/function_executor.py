@@ -3,7 +3,6 @@ Function Executor - Executes Gemma-routed functions with actual backend calls.
 """
 
 import asyncio
-import json
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -111,14 +110,6 @@ class FunctionExecutor:
                 return self._add_task(params)
             elif func_name == "web_search":
                 return self._web_search(params)
-            elif func_name == "barehands_control":
-                from actions.barehands import barehands_control
-                payload = json.loads(barehands_control(params))
-                return {
-                    "success": bool(payload.get("success", False)),
-                    "message": str(payload.get("message", "Barehands operation completed.")),
-                    "data": payload,
-                }
             elif func_name == "get_system_info":
                 return self._get_system_info()
             else:

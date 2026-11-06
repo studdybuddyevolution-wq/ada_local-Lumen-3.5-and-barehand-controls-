@@ -61,7 +61,7 @@ class MainWindow(FluentWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Lumen")
+        self.setWindowTitle("A.D.A")
         self.setMinimumSize(1100, 750)
         self.resize(1200, 800)
         
@@ -96,45 +96,51 @@ class MainWindow(FluentWindow):
         self.preloader_thread.start()
     
     def _init_voice_assistant(self):
-        """Connect voice events without opening the microphone at startup."""
-        if not VOICE_ASSISTANT_ENABLED:
-            self.system_monitor.wake_button.setEnabled(False)
-            self.system_monitor.sleep_button.setEnabled(False)
-            return
-
-        voice_assistant.speech_recognized.connect(self._on_speech_recognized)
-        voice_assistant.listening_state_changed.connect(self._on_voice_listening_state)
-        voice_assistant.error_occurred.connect(self._on_voice_error)
-        voice_assistant.timer_set.connect(self._on_voice_timer_set)
-        voice_assistant.alarm_added.connect(self._on_voice_alarm_added)
-        voice_assistant.calendar_updated.connect(self._on_voice_calendar_updated)
-        voice_assistant.task_added.connect(self._on_voice_task_added)
-        self.set_status("Microphone asleep. Press Wake when you want Lumen to listen.")
-
-    def _wake_voice(self):
-        """Open the microphone off the GUI thread."""
-        if not VOICE_ASSISTANT_ENABLED:
-            return
-        self.system_monitor.wake_button.setEnabled(False)
-        self.set_status("Starting microphone...")
-        threading.Thread(target=voice_assistant.start, daemon=True).start()
-
-    def _sleep_voice(self):
-        """Stop capture and release the microphone off the GUI thread."""
-        if not VOICE_ASSISTANT_ENABLED:
-            return
-        self.system_monitor.sleep_button.setEnabled(False)
-        self.set_status("Closing microphone...")
-        threading.Thread(target=voice_assistant.stop, daemon=True).start()
-
-    def _on_voice_listening_state(self, listening: bool):
-        self.system_monitor.set_voice_listening(listening)
-        self.set_status("Listening — microphone active" if listening else "Sleeping — microphone closed")
-
-    def _on_voice_error(self, message: str):
-        self.system_monitor.set_voice_listening(False)
-        self.set_status("Voice error: " + message)
-
+        """Initialize and start voice assistant if enabled."""
+        print(f"[App] Initializing voice assistant (enabled={VOICE_ASSISTANT_ENABLED})...")
+        if VOICE_ASSISTANT_ENABLED:
+            # Connect voice assistant signals to UI
+            print(f"[App] Connecting voice assistant signals...")
+            voice_assistant.wake_word_detected.connect(self._on_wake_word_detected)
+            voice_assistant.speech_recognized.connect(self._on_speech_recognized)
+            voice_assistant.processing_finished.connect(self._on_processing_finished)
+            # Connect GUI update signals
+            voice_assistant.timer_set.connect(self._on_voice_timer_set)
+            voice_assistant.alarm_added.connect(self._on_voice_alarm_added)
+            voice_assistant.calendar_updated.connect(self._on_voice_calendar_updated)
+            voice_assistant.task_added.connect(self._on_voice_task_added)
+            print(f"[App] ✓ Signals connected")
+            
+            # Initialize in background thread to avoid blocking UI
+            def init_va():
+                print(f"[App] Background thread: Initializing voice assistant...")
+                if voice_assistant.initialize():
+                    print(f"[App] Background thread: ✓ Voice assistant initialized")
+                    # Enable TTS for voice assistant
+                    tts.toggle(True)
+                    print(f"[App] Background thread: TTS enabled")
+                    # Start listening
+                    print(f"[App] Background thread: Starting voice assistant...")
+                    voice_assistant.start()
+                    print(f"[App] Background thread: ✓ Voice assistant started")
+                else:
+                    print(f"[App] Background thread: ✗ Failed to initialize voice assistant")
+            
+            threading.Thread(target=init_va, daemon=True).start()
+        else:
+            print(f"[App] Voice assistant disabled in config")
+    
+    def _on_wake_word_detected(self):
+        """Handle wake word detection - show listening indicator."""
+        print(f"{GREEN}[App] ✓ Wake word signal received in UI thread!{RESET}")
+        if VOICE_ASSISTANT_ENABLED:
+            print(f"{GREEN}[App] Showing voice indicator...{RESET}")
+            # Use system monitor's simple indicator instead of overlay
+            self.system_monitor.show_listening()
+            print(f"{GREEN}[App] ✓ Voice indicator shown{RESET}")
+        else:
+            print(f"{GRAY}[App] Voice assistant disabled in config{RESET}")
+    
     def _on_speech_recognized(self, text: str):
         """Handle speech recognition - update indicator text if needed."""
         # Keep showing indicator while processing
@@ -259,9 +265,7 @@ class MainWindow(FluentWindow):
     def _init_system_monitor(self):
         """Add system monitor widget to the title bar, centered with controls on the right."""
         self.system_monitor = SystemMonitor()
-        self.system_monitor.wake_button.clicked.connect(self._wake_voice)
-        self.system_monitor.sleep_button.clicked.connect(self._sleep_voice)
-
+        
         # Get the title bar layout
         layout = self.titleBar.hBoxLayout
         

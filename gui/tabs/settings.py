@@ -18,7 +18,6 @@ from qfluentwidgets import (
 )
 
 from core.settings_store import settings
-from core.engine_manager import engine_manager
 
 
 class ModelFetcher(QThread):
@@ -72,10 +71,9 @@ class ComboBoxCard(SettingCard):
     
     value_changed = Signal(str)
     
-    def __init__(self, icon, title, description, options: list, key_path: str, parent=None, persist: bool = True):
+    def __init__(self, icon, title, description, options: list, key_path: str, parent=None):
         super().__init__(icon, title, description, parent)
         self.key_path = key_path
-        self.persist = persist
         
         self.combo = ComboBox(self)
         self.combo.setMinimumWidth(180)
@@ -91,8 +89,7 @@ class ComboBoxCard(SettingCard):
         self.hBoxLayout.addSpacing(16)
     
     def _on_changed(self, text: str):
-        if self.persist:
-            settings.set(self.key_path, text)
+        settings.set(self.key_path, text)
         self.value_changed.emit(text)
 
 
@@ -339,19 +336,7 @@ class SettingsTab(ScrollArea):
         # AI Models Group
         # ─────────────────────────────────────────────────────────────
         self.ai_group = SettingCardGroup("AI Models", self.scrollWidget)
-
-        self.engine_mode_card = ComboBoxCard(
-            FIF.ROBOT,
-            "Conversation Engine",
-            "local = on-device Qwen 3.5 4B; gemini = optional Gemini cloud text engine",
-            ["local", "gemini"],
-            "engine.mode",
-            self.ai_group,
-            persist=False
-        )
-        self.engine_mode_card.value_changed.connect(self._on_engine_mode_changed)
-        self.ai_group.addSettingCard(self.engine_mode_card)
-
+        
         self.chat_model_card = ModelSelectCard(
             FIF.CHAT,
             "Chat Model",
@@ -501,7 +486,7 @@ class SettingsTab(ScrollArea):
         self.about_card = PrimaryPushSettingCard(
             "Check Update",
             FIF.INFO,
-            "About Lumen",
+            "About A.D.A",
             "Version 0.2.0 (Alpha)",
             self.about_group
         )
@@ -518,32 +503,6 @@ class SettingsTab(ScrollArea):
         self.about_group.addSettingCard(self.reset_card)
         
         self.expandLayout.addWidget(self.about_group)
-
-    def _on_engine_mode_changed(self, mode: str):
-        ok, message = engine_manager.switch_mode(mode)
-        if ok:
-            InfoBar.success(
-                title="Engine updated",
-                content=message,
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=3500,
-                parent=self.window()
-            )
-        else:
-            self.engine_mode_card.combo.blockSignals(True)
-            self.engine_mode_card.combo.setCurrentText(engine_manager.current_mode())
-            self.engine_mode_card.combo.blockSignals(False)
-            InfoBar.warning(
-                title="Engine not changed",
-                content=message,
-                orient=Qt.Horizontal,
-                isClosable=True,
-                position=InfoBarPosition.TOP,
-                duration=6000,
-                parent=self.window()
-            )
 
     def _on_theme_changed(self, value: str):
         theme_map = {"Dark": Theme.DARK, "Light": Theme.LIGHT, "Auto": Theme.AUTO}

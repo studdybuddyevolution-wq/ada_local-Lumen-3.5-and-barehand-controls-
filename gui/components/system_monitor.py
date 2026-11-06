@@ -4,7 +4,7 @@ System Monitor Component - Displays CPU, RAM, GPU usage and running Ollama model
 
 import psutil
 import requests
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QPushButton
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import QTimer, Qt, QObject, Signal, QThread
 from PySide6.QtGui import QFont
 
@@ -199,20 +199,6 @@ class SystemMonitor(QFrame):
         models_container.addWidget(self.models_value)
         layout.addLayout(models_container)
         
-        # Manual mic controls. No ambient listener or wake-word detection.
-        self.wake_button = QPushButton("Wake", self)
-        self.wake_button.setToolTip("Open the microphone and start listening")
-        self.wake_button.setFixedHeight(23)
-        self.wake_button.setStyleSheet("QPushButton { color: white; background: #315d49; border: 0; border-radius: 5px; padding: 2px 10px; font-weight: 600; } QPushButton:disabled { color: #777; background: #303030; }")
-        layout.addWidget(self.wake_button)
-
-        self.sleep_button = QPushButton("Sleep", self)
-        self.sleep_button.setToolTip("Stop listening and close the microphone")
-        self.sleep_button.setFixedHeight(23)
-        self.sleep_button.setEnabled(False)
-        self.sleep_button.setStyleSheet("QPushButton { color: white; background: #633d45; border: 0; border-radius: 5px; padding: 2px 10px; font-weight: 600; } QPushButton:disabled { color: #777; background: #303030; }")
-        layout.addWidget(self.sleep_button)
-
         # Voice listening indicator (simple glowing bar)
         self.voice_indicator = QFrame()
         self.voice_indicator.setFixedSize(4, 20)
@@ -257,15 +243,6 @@ class SystemMonitor(QFrame):
             }
         """)
     
-    def set_voice_listening(self, listening: bool):
-        """Sync manual mic buttons and the listening indicator."""
-        self.wake_button.setEnabled(not listening)
-        self.sleep_button.setEnabled(listening)
-        if listening:
-            self.show_listening()
-        else:
-            self.hide_listening()
-
     def show_listening(self):
         """Show the voice listening indicator."""
         if not self.voice_indicator.isVisible():
