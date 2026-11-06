@@ -8,3 +8,14 @@ merged_model/
 __pycache__/
 chat_history.db
 realtimesst.log
+
+# Optional Barehands upstream checkout
+integrations/barehands/
+
+# Local credentials and runtime files
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+*.log
