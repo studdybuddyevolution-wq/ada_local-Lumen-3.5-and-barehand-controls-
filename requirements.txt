@@ -19,6 +19,9 @@ darkdetect>=0.8.0              # Detect system dark/light mode
 markdown>=3.4.0                # Markdown rendering for chat messages
 pygments>=2.15.0               # Syntax highlighting for code blocks
 
+# Optional cloud text mode (local mode does not require an API key)
+google-genai>=1.0.0
+
 # -----------------------------------------------------
 # AI & Machine Learning
 # -----------------------------------------------------

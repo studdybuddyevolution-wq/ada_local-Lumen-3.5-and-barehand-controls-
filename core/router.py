@@ -126,6 +126,17 @@ def get_system_info() -> str:
     """
     return "result"
 
+def barehands_control(operation: str = "status", title: str = "", body: str = "",
+                       src: str = "", x: float = None, y: float = None,
+                       confirm: bool = False) -> str:
+    """
+    Control the optional local Barehands hand-tracked board.
+    Operations: status, start, open, present, add_card, add_image, board_state,
+    clear and reset. clear/reset require explicit confirm=true.
+    """
+    return "result"
+
+
 def thinking(prompt: str) -> str:
     """
     Use for complex queries requiring reasoning, math, coding, or multi-step analysis.
@@ -153,6 +164,7 @@ TOOLS = [
     get_json_schema(create_calendar_event),
     get_json_schema(add_task),
     get_json_schema(web_search),
+    get_json_schema(barehands_control),
     get_json_schema(get_system_info),
     get_json_schema(thinking),
     get_json_schema(nonthinking),
@@ -163,7 +175,7 @@ SYSTEM_MSG = "You are a model that can do function calling with the following fu
 # All valid function names
 VALID_FUNCTIONS = {
     "control_light", "set_timer", "set_alarm", "create_calendar_event",
-    "add_task", "web_search", "get_system_info", "thinking", "nonthinking"
+    "add_task", "web_search", "barehands_control", "get_system_info", "thinking", "nonthinking"
 }
 
 
