@@ -1,7 +1,7 @@
 """Unit tests for explicit engine-switch command parsing.
 
-Load engine_manager as a standalone module so importing the tests does not
-run core/__init__.py, which intentionally initializes the heavier voice stack.
+Load engine_manager as a standalone module so these unit tests do not import
+core/__init__.py or initialize the desktop audio stack.
 """
 import importlib.util
 from pathlib import Path
